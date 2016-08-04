@@ -1,15 +1,24 @@
 {
-  "name": "joi-test",
-  "version": "1.0.0",
-  "description": "",
+  "name": "joi2json",
+  "version": "0.0.1",
+  "description": "Converts a joi object into a json model",
+  "homepage": "",
+  "repository": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "gulpplugin"
+  ],
+  "author": "Danny Burrows <danny.burrows@monscierge.com>",
+  "license": "MIT",
   "dependencies": {
     "joi": "^9.0.4",
-    "lodash": "^4.14.1"
+    "lodash": "^4.14.1",
+    "through2": "^2.0.1",
+    "yargs": "^4.8.1",
+    "gulp": "^3.9.1",
+    "gulp-util": "^3.0.7"
   }
 }
