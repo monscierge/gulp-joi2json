@@ -12,5 +12,6 @@ module.exports = Joi.object().keys({
         items: Joi.array().items()
     }),
     created_on: Joi.date().timestamp().required(),
-    updated_on: Joi.date().timestamp().required()
+    updated_on: Joi.date().timestamp().required(),
+    testing: Joi.string().email()
 });

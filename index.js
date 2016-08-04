@@ -12,11 +12,17 @@ module.exports = function() {
     return through.obj(function convertMe(file, enc, cb) {
         var item = require(file.path);
 
-        var model = [];
+        var models = [];
         _.each(item._inner.children, (child) => {
-            model.push(parseObject({}, child));
+            models.push(parseObject({}, child));
         });
-        file.contents = new Buffer(JSON.stringify(model));
+        var modelObject = {};
+        // unroll the array into an object
+        _.each(models, (model) => {
+            var key = Object.keys(model);
+            modelObject[key] = model[key];
+        });
+        file.contents = new Buffer(JSON.stringify(modelObject));
         file.path = replaceExtension(file.path);
         this.push(file);
         return cb();
