@@ -25,19 +25,19 @@ function parseObject(obj, property) {
     }
     // if array, append each type
     if (property.schema._type == 'array') {
-        obj[property.key].array_types = [];
         _.each(property.schema._inner.inclusions, (include) => {
-            if (include._tests) {
+            if (include._tests && include._tests.length > 1) {
+                obj[property.key].array_types = [];
                 _.each(include._tests, (test) => {
                     obj[property.key].array_types.push(test.name);
                 });
+            } else {
+                obj[property.key].array_type = include._type;
             }
             if (include._type == 'object') {
                 // allow only
-                // _inner.items[0]._inner.children[0].schema._valids[0]._set[0]
                 var newObj = parseObject({}, include);
-                obj[property.key].array_types.push(newObj);
-                // obj[property.key].array_types.push("object");
+                obj[property.key].array_type = newObj;
             }
         });
     }
@@ -72,7 +72,7 @@ function parseObject(obj, property) {
         if (property._inner && property._inner.children && property._inner.children.length) {
         _.each(property._inner.children, (child) => {
                 var newObj = parseObject({}, child);
-                obj[child.key] = newObj;
+                obj[child.key] = newObj[child.key];
             });
         }
     }

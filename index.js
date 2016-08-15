@@ -9,7 +9,7 @@ module.exports = function() {
         return gutil.replaceExtension(path, '.json');
     }
     
-    return through.obj(function convertMe(file, enc, cb) {
+    return through.obj(function (file, enc, cb) {
         var item = require(file.path);
 
         var models = [];
@@ -29,23 +29,29 @@ module.exports = function() {
     });
 
     function parseObject(obj, property) {
-        obj[property.key] = {};
-        obj[property.key].type = property.schema._type;
+        if (property.key) {
+            obj[property.key] = {};
+            obj[property.key].type = property.schema._type;
+        }
         // if generic number, convert to float
         if (property.schema._type == 'number') {
             obj[property.key].type = 'float';
         }
         // if array, append each type
         if (property.schema._type == 'array') {
-            obj[property.key].array_types = [];
             _.each(property.schema._inner.inclusions, (include) => {
-                if (include._tests) {
+                if (include._tests && include._tests.length > 1) {
+                    obj[property.key].array_types = [];
                     _.each(include._tests, (test) => {
                         obj[property.key].array_types.push(test.name);
                     });
+                } else {
+                    obj[property.key].array_type = include._type;
                 }
                 if (include._type == 'object') {
-                    obj[property.key].array_types.push("object");
+                    // allow only
+                    var newObj = parseObject({}, include);
+                    obj[property.key].array_type = newObj;
                 }
             });
         }
@@ -68,8 +74,25 @@ module.exports = function() {
         if (property.schema._flags && property.schema._flags.presence == "required") {
             obj[property.key].required = true;
         }
+        // enum?
+        if (property.schema._valids && property.schema._valids._set && property.schema._valids._set.length) {
+            obj[property.key].enum = [];
+            _.each(property.schema._valids._set, (prop) => {
+                obj[property.key].enum.push(prop);
+            });
+        }
+
+        if (property._type === "object") {
+            if (property._inner && property._inner.children && property._inner.children.length) {
+            _.each(property._inner.children, (child) => {
+                    var newObj = parseObject({}, child);
+                    obj[child.key] = newObj[child.key];
+                });
+            }
+        }
+
         // is an object? iterate children
-        if (property.schema._inner.children && property.schema._inner.children.length > 0) {
+        if (property.schema && property.schema._inner && property.schema._inner.children && property.schema._inner.children.length > 0) {
             obj[property.key].properties = [];
             _.each(property.schema._inner.children, (child) => {
                 var newObj = parseObject({}, child);
@@ -77,5 +100,5 @@ module.exports = function() {
             });
         }
         return obj;
-    };
+    }
 };
